@@ -1,44 +1,45 @@
-# ShopFlow
+# 🛍️ ShopFlow
 
 > A production-grade distributed e-commerce platform built on microservices architecture — demonstrating end-to-end mastery of backend engineering, distributed systems patterns, full-stack development, and cloud-native deployment.
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Microservices](#microservices)
-- [Quickstart](#quickstart)
-- [Default Credentials](#default-credentials)
-- [API Endpoints](#api-endpoints)
-- [Observability](#observability)
-- [Project Structure](#project-structure)
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [Features](#-features)
+- [Animations (GSAP)](#-animations-gsap)
+- [Microservices](#-microservices)
+- [Quickstart](#-quickstart)
+- [Default Credentials](#-default-credentials)
+- [API Endpoints](#-api-endpoints)
+- [Observability](#-observability)
+- [Project Structure](#-project-structure)
 
 ---
 
-## Overview
+## 🚀 Overview
 
 ShopFlow is a full-featured e-commerce platform that mirrors the architectural patterns used at companies like Amazon, Shopify, and Flipkart. It is intentionally built at production depth — not a toy project — featuring event-driven sagas, RBAC-secured APIs, distributed tracing, and a fully functional admin panel.
 
 **What it demonstrates:**
-- Domain-driven microservices with independent databases
-- Saga orchestration pattern for distributed transactions
-- JWT + OAuth2 authentication via Keycloak
-- Event-driven architecture with Apache Kafka
-- Full observability: metrics, distributed tracing, and logs
-- Container-first deployment with Docker Compose and Kubernetes manifests
+- 🏛️ Domain-driven microservices with independent databases
+- 🔄 Saga orchestration pattern for distributed transactions
+- 🔐 JWT + OAuth2 authentication via Keycloak
+- 📨 Event-driven architecture with Apache Kafka
+- 📊 Full observability: metrics, distributed tracing, and logs
+- 🐳 Container-first deployment with Docker Compose and Kubernetes manifests
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                      Browser / React UI                  │
-│          (Vite + TypeScript + Tailwind + ShadCN)         │
+│     (Vite + TypeScript + Tailwind + ShadCN + GSAP)       │
 └────────────────────────┬────────────────────────────────┘
                          │ HTTP (port 3000)
                          ▼
@@ -72,13 +73,14 @@ ShopFlow is a full-featured e-commerce platform that mirrors the architectural p
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
 | Layer | Technology |
 |---|---|
 | Framework | React 19 + Vite + TypeScript |
 | Styling | Tailwind CSS + ShadCN/UI |
+| Animations | GSAP 3.15 |
 | Icons | Lucide React |
 | Routing | React Router v6 |
 | Auth Client | Keycloak-JS |
@@ -122,38 +124,75 @@ ShopFlow is a full-featured e-commerce platform that mirrors the architectural p
 
 ---
 
-## Features
+## ✨ Features
 
-### Customer Experience
-- **Product Browsing** — paginated product grid with images, pricing in ₹ INR, category filtering
-- **Smart Search** — full-text search powered by OpenSearch with typo tolerance
-- **Cart** — persistent Redis-backed cart with live `−  N  +` quantity stepper; reaching zero reverts to "Add to Cart"
-- **Checkout** — two-step flow: order summary → payment method selection
-- **Payment Options** — Cash on Delivery (instant confirm) or Pay Online (simulated card gateway with auto-formatted card number, expiry, CVV)
-- **Order History** — complete order timeline with status tracking (PENDING → CONFIRMED → SHIPPED)
-- **Account Page** — profile info, verified badge, one-click sign out
-- **Dark / Light Theme** — toggle persisted to localStorage with system preference detection
-- **Registration** — new users sign up via Keycloak's built-in form and are auto-assigned the CUSTOMER role
+### 🛒 Customer Experience
+- 🖼️ **Product Browsing** — paginated product grid with images, pricing in ₹ INR, category filtering
+- 🔍 **Smart Search** — full-text search powered by OpenSearch with typo tolerance
+- 🧺 **Cart** — persistent Redis-backed cart with live `− N +` quantity stepper; reaching zero reverts to "Add to Cart"
+- 💳 **Checkout** — two-step flow: order summary → payment method selection
+- 💰 **Payment Options** — Cash on Delivery (instant confirm) or Pay Online (simulated card gateway with auto-formatted card number, expiry, CVV)
+- 📦 **Order History** — complete order timeline with status tracking (PENDING → CONFIRMED → SHIPPED)
+- 👤 **Account Page** — profile info, verified badge, one-click sign out
+- 🌙 **Dark / Light Theme** — toggle persisted to localStorage with system preference detection
+- 📝 **Registration** — new users sign up via Keycloak's built-in form and are auto-assigned the CUSTOMER role
 
-### Admin Panel (`/admin` — ADMIN role required)
-- **Product Management** — full CRUD table: add, edit, delete products
-- **Image Upload** — upload from device (canvas-resized to max 800px, JPEG 0.78 quality) OR paste an image URL
-- **Order Management** — view all orders across all customers; update status via dropdown (only valid transitions shown)
-- **RBAC Enforced** — both frontend route guard and backend `@PreAuthorize("hasRole('ADMIN')")` on every admin endpoint
-- **Status State Machine** — PENDING → CONFIRMED / CANCELLED / FAILED; CONFIRMED → SHIPPED / CANCELLED / FAILED; terminal states locked
+### 🔧 Admin Panel (`/admin` — ADMIN role required)
+- 📋 **Product Management** — full CRUD table: add, edit, delete products
+- 🖼️ **Image Upload** — upload from device (canvas-resized to max 800px, JPEG 0.78 quality) OR paste an image URL
+- 📊 **Order Management** — view all orders across all customers; update status via dropdown (only valid transitions shown)
+- 🛡️ **RBAC Enforced** — both frontend route guard and backend `@PreAuthorize("hasRole('ADMIN')")` on every admin endpoint
+- 🔀 **Status State Machine** — PENDING → CONFIRMED / CANCELLED / FAILED; CONFIRMED → SHIPPED / CANCELLED / FAILED; terminal states locked
 
-### System / Engineering
-- **Saga Orchestration** — order creation runs reserve → pay → confirm with full compensation rollback on failure
-- **JWT RBAC** — Keycloak realm roles mapped to Spring Security authorities via `realm_access.roles`
-- **Idempotency** — payment service enforces UUID-based idempotency keys
-- **Distributed Tracing** — 100% of requests traced via OpenTelemetry → Jaeger
-- **Health Endpoints** — Spring Actuator `/actuator/health` with detailed DB/Redis status on every service
-- **Structured Logging** — trace IDs and span IDs embedded in every log line
-- **Rate Limiting** — API Gateway enforces per-IP limits via Redis
+### ⚙️ System / Engineering
+- 🔄 **Saga Orchestration** — order creation runs reserve → pay → confirm with full compensation rollback on failure
+- 🔐 **JWT RBAC** — Keycloak realm roles mapped to Spring Security authorities via `realm_access.roles`
+- 🔁 **Idempotency** — payment service enforces UUID-based idempotency keys
+- 🔭 **Distributed Tracing** — 100% of requests traced via OpenTelemetry → Jaeger
+- 💚 **Health Endpoints** — Spring Actuator `/actuator/health` with detailed DB/Redis status on every service
+- 📝 **Structured Logging** — trace IDs and span IDs embedded in every log line
+- 🚦 **Rate Limiting** — API Gateway enforces per-IP limits via Redis
 
 ---
 
-## Microservices
+## 🎬 Animations (GSAP)
+
+The frontend uses **GSAP 3.15** for smooth, choreographed animations across every page. All animations follow the React-safe `gsap.context()` pattern with automatic cleanup via `ctx.revert()` on unmount — no memory leaks.
+
+### Animation Breakdown
+
+| Page / Component | Animation | Technique |
+|---|---|---|
+| **Navbar** | Slides down from above on first load | `gsap.fromTo(ref, { y: -70, opacity: 0 }, ...)` |
+| **Home — Hero** | Staggered timeline: badge → title → subtitle → CTA → stats → feature cards → CTA banner | `gsap.timeline()` with `'-=0.2'` overlap offsets |
+| **Shop — Product Grid** | Cards fade + rise in staggered after data loads | `gsap.set(cards, { opacity:0, y:36, scale:0.94 })` then `gsap.to(...)` |
+| **Cart — Item Rows** | Each row slides in from the left, summary fades up | `gsap.set` + `gsap.to` with `stagger: 0.08` |
+| **Orders — Order Cards** | Cards rise in with slight scale from 0.97 | `gsap.set` + `gsap.to` with `stagger: 0.1` |
+| **Account** | Card surges up from below; info rows slide in from left with delay | `gsap.fromTo(ref, ...)` + scoped `querySelectorAll('.info-row')` |
+
+### Key Pattern Used
+
+```tsx
+useEffect(() => {
+  const ctx = gsap.context(() => {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+    tl.fromTo('.hero-badge',  { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.5 })
+      .fromTo('.hero-title',  { opacity: 0, y: 56  }, { opacity: 1, y: 0, duration: 0.75 }, '-=0.2')
+      .fromTo('.hero-sub',    { opacity: 0, y: 32  }, { opacity: 1, y: 0, duration: 0.6  }, '-=0.4')
+      .fromTo('.hero-cta',    { opacity: 0, y: 24  }, { opacity: 1, y: 0, duration: 0.5  }, '-=0.35')
+      .fromTo('.feat-card',   { opacity: 0, y: 50, scale: 0.95 },
+              { opacity: 1, y: 0, scale: 1, stagger: 0.14 }, '-=0.15')
+  }, heroRef)
+
+  return () => ctx.revert() // cleanup on unmount
+}, [])
+```
+
+> **Rule:** Never set `style={{ opacity: 0 }}` inline on elements. For data-driven lists (products, orders, cart items), use `gsap.set(elements, { opacity: 0 })` inside the `useEffect` right before `gsap.to()` — this way elements stay visible if JavaScript hasn't run yet.
+
+---
+
+## 🔌 Microservices
 
 ### API Gateway `:8085`
 Spring Cloud Gateway — single entry point for all traffic. Validates JWTs, enforces rate limits, routes requests to downstream services.
@@ -178,11 +217,11 @@ Kafka consumer that handles `OrderCreated` and `PaymentCompleted` events. Runs i
 
 ---
 
-## Quickstart
+## ⚡ Quickstart
 
 ### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (with Compose V2)
-- 8 GB RAM recommended (all containers combined)
+- 🐳 [Docker Desktop](https://www.docker.com/products/docker-desktop/) (with Compose V2)
+- 💾 8 GB RAM recommended (all containers combined)
 
 ### 1. Clone and start
 
@@ -201,21 +240,21 @@ docker compose ps          # all should show "running"
 docker compose logs -f     # watch startup logs
 ```
 
-### 3. Open the app
+### 3. Open the app 🎉
 
 | Service | URL |
 |---|---|
-| Storefront | http://localhost:3000 |
-| Keycloak Admin | http://localhost:8080/admin (admin / admin) |
-| Jaeger Tracing | http://localhost:16686 |
-| Kafka | localhost:9092 |
-| PostgreSQL | localhost:5432 |
-| Redis | localhost:6379 |
-| OpenSearch | http://localhost:9200 |
+| 🛍️ Storefront | http://localhost:3000 |
+| 🔐 Keycloak Admin | http://localhost:8080/admin (admin / admin) |
+| 🔭 Jaeger Tracing | http://localhost:16686 |
+| 📨 Kafka | localhost:9092 |
+| 🐘 PostgreSQL | localhost:5432 |
+| ⚡ Redis | localhost:6379 |
+| 🔍 OpenSearch | http://localhost:9200 |
 
 ---
 
-## Default Credentials
+## 🔑 Default Credentials
 
 ### Customer Account
 | Field | Value |
@@ -240,11 +279,11 @@ docker compose logs -f     # watch startup logs
 | Username | `admin` |
 | Password | `admin` |
 
-> New users who register via the Sign Up button are auto-assigned the CUSTOMER role via Keycloak's default role configuration.
+> 💡 New users who register via the Sign Up button are auto-assigned the CUSTOMER role via Keycloak's default role configuration.
 
 ---
 
-## API Endpoints
+## 📡 API Endpoints
 
 All requests go through the API Gateway at `http://localhost:3000/api/v1/...` (or directly to each service port in development).
 
@@ -284,20 +323,20 @@ All requests go through the API Gateway at `http://localhost:3000/api/v1/...` (o
 
 ---
 
-## Observability
+## 📊 Observability
 
-### Distributed Tracing — Jaeger
+### 🔭 Distributed Tracing — Jaeger
 Every HTTP request generates a trace spanning all services it touches. Open http://localhost:16686, select a service, and click "Find Traces" to see the full call chain with timing.
 
-### Metrics — Prometheus + Grafana
-Spring Boot Actuator exposes `/actuator/prometheus` on each service. Prometheus scrapes all services; Grafana (in the observability stack) renders RED dashboards (Rate / Errors / Duration).
+### 📈 Metrics — Prometheus + Grafana
+Spring Boot Actuator exposes `/actuator/prometheus` on each service. Prometheus scrapes all services; Grafana renders RED dashboards (Rate / Errors / Duration).
 
 ```bash
 # Start the observability stack separately
 docker compose -f observability/docker-compose.yml up -d
 ```
 
-### Structured Logs
+### 📝 Structured Logs
 Every log line includes `traceId` and `spanId` fields, enabling log-to-trace correlation in Grafana Loki.
 
 ```
@@ -306,29 +345,29 @@ Every log line includes `traceId` and `spanId` fields, enabling log-to-trace cor
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 shopflow/
-├── api-gateway/              # Spring Cloud Gateway
-├── user-service/             # User profile & address management
-├── catalog-service/          # Product catalog + OpenSearch indexing
-├── cart-service/             # Redis-backed cart
-├── order-service/            # Saga orchestrator + order lifecycle
-├── payment-service/          # Payment processing + idempotency
-├── notification-service/     # Kafka consumer + email dispatch
-├── shopflow-frontend/        # React 19 + Vite + TypeScript SPA
-├── keycloak-init/            # Realm config, roles, test users
-├── docker/                   # DB init SQL, shared Docker resources
-├── k8s/                      # Kubernetes manifests
-├── observability/            # Prometheus + Grafana + Loki compose
-├── scripts/                  # Dev utility scripts
-└── docker-compose.yml        # Full local stack
+├── api-gateway/              # 🚪 Spring Cloud Gateway
+├── user-service/             # 👤 User profile & address management
+├── catalog-service/          # 📦 Product catalog + OpenSearch indexing
+├── cart-service/             # 🧺 Redis-backed cart
+├── order-service/            # 📋 Saga orchestrator + order lifecycle
+├── payment-service/          # 💳 Payment processing + idempotency
+├── notification-service/     # 🔔 Kafka consumer + email dispatch
+├── shopflow-frontend/        # ⚛️  React 19 + Vite + TypeScript + GSAP SPA
+├── keycloak-init/            # 🔐 Realm config, roles, test users
+├── docker/                   # 🐳 DB init SQL, shared Docker resources
+├── k8s/                      # ☸️  Kubernetes manifests
+├── observability/            # 📊 Prometheus + Grafana + Loki compose
+├── scripts/                  # 🔧 Dev utility scripts
+└── docker-compose.yml        # 🚀 Full local stack
 ```
 
 ---
 
-## Order Saga Flow
+## 🔄 Order Saga Flow
 
 ```
 Customer places order
@@ -346,19 +385,19 @@ Customer places order
         │                               ◄── payment.result
         │
         ▼
-  status: CONFIRMED  ──── OR ────  status: FAILED
+  ✅ status: CONFIRMED  ──── OR ────  ❌ status: FAILED
                                   (compensate: release stock, refund)
 ```
 
 ---
 
-## Keycloak & Security
+## 🔐 Keycloak & Security
 
-- **Realm:** `shopflow-realm`
-- **Roles:** `CUSTOMER` (default for all new registrations), `ADMIN`
-- **Token:** JWT with `realm_access.roles` claim — mapped to Spring Security `ROLE_CUSTOMER` / `ROLE_ADMIN` authorities via a custom `JwtAuthenticationConverter`
-- **Method Security:** `@PreAuthorize("hasRole('ADMIN')")` on all admin endpoints — enforced at the service layer, not just the gateway
+- 🏰 **Realm:** `shopflow-realm`
+- 👥 **Roles:** `CUSTOMER` (default for all new registrations), `ADMIN`
+- 🎫 **Token:** JWT with `realm_access.roles` claim — mapped to Spring Security `ROLE_CUSTOMER` / `ROLE_ADMIN` authorities via a custom `JwtAuthenticationConverter`
+- 🛡️ **Method Security:** `@PreAuthorize("hasRole('ADMIN')")` on all admin endpoints — enforced at the service layer, not just the gateway
 
 ---
 
-*Built with Java 21 · Spring Boot 3.2 · React 19 · Keycloak 24 · Apache Kafka · PostgreSQL · Redis · OpenSearch · Docker*
+*Built with ❤️ using Java 21 · Spring Boot 3.2 · React 19 · GSAP 3.15 · Keycloak 24 · Apache Kafka · PostgreSQL · Redis · OpenSearch · Docker*
