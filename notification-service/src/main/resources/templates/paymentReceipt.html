@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${status == 'SUCCEEDED'} ? 'Payment Receipt' : 'Payment Failed'">Payment Update</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { background: #fff; border-radius: 8px; padding: 32px; max-width: 540px; margin: auto; }
+        .header { color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 16px; margin-bottom: 24px; }
+        .header.success { border-color: #4caf50; }
+        .header.failed  { border-color: #f44336; }
+        .detail { margin: 12px 0; color: #555; }
+        .label  { font-weight: bold; color: #333; }
+        .badge-success { background: #e8f5e9; color: #388e3c; padding: 4px 10px; border-radius: 4px; }
+        .badge-failed  { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; }
+        .footer { margin-top: 32px; font-size: 12px; color: #aaa; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header" th:classappend="${status == 'SUCCEEDED'} ? 'success' : 'failed'">
+        <h2 th:text="${status == 'SUCCEEDED'} ? '💳 Payment Confirmed' : '⚠ Payment Failed'">
+            Payment Update
+        </h2>
+    </div>
+
+    <div class="detail">
+        <span class="label">Order ID:</span>
+        <span th:text="${orderId}">—</span>
+    </div>
+    <div class="detail" th:if="${amount != null}">
+        <span class="label">Amount:</span>
+        <span th:text="${currency + ' ' + amount}">—</span>
+    </div>
+    <div class="detail">
+        <span class="label">Status:</span>
+        <span th:classappend="${status == 'SUCCEEDED'} ? 'badge-success' : 'badge-failed'"
+              th:text="${status}">—</span>
+    </div>
+    <div class="detail" th:if="${reason != null}">
+        <span class="label">Reason:</span>
+        <span th:text="${reason}">—</span>
+    </div>
+
+    <p style="margin-top: 24px;" th:if="${status == 'FAILED'}">
+        Please check your payment details and try again, or contact support.
+    </p>
+    <p style="margin-top: 24px;" th:if="${status == 'SUCCEEDED'}">
+        Your payment has been processed successfully. Thank you!
+    </p>
+
+    <div class="footer">
+        &copy; ShopFlow. All rights reserved.
+    </div>
+</div>
+</body>
+</html>

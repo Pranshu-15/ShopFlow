@@ -1,0 +1,75 @@
+{
+  "id": "shopflow-realm",
+  "realm": "shopflow-realm",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "defaultRoles": ["CUSTOMER"],
+  "roles": {
+    "realm": [
+      {
+        "name": "CUSTOMER",
+        "description": "Standard shopper customer role"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Store admin management role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "shopflow-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "webOrigins": ["http://localhost:3000", "http://localhost:8080", "+"],
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:3000"]
+    },
+    {
+      "clientId": "shopflow-backend",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "shopflow-backend-super-secret-key-2026",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "webOrigins": ["http://localhost:3000", "http://localhost:8080", "+"],
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:3000"]
+    }
+  ],
+  "users": [
+    {
+      "username": "test_customer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "customer@shopflow.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["CUSTOMER"]
+    },
+    {
+      "username": "test_admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "admin@shopflow.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN"]
+    }
+  ]
+}

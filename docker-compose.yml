@@ -1,0 +1,252 @@
+version: '3.8'
+
+# Full ShopFlow stack for local development.
+# Run: docker compose up -d
+# Frontend:  http://localhost:3000
+# Keycloak:  http://localhost:8080  (admin / admin)
+# Jaeger UI: http://localhost:16686
+
+networks:
+  shopflow-net:
+    driver: bridge
+
+volumes:
+  shopflow_db_data: {}
+  shopflow_redis_data: {}
+  shopflow_kafka_data: {}
+  shopflow_opensearch_data: {}
+  shopflow_keycloak_data: {}
+
+# ── Reusable env anchors ──────────────────────────────────────────────────────
+x-db-env: &db-env
+  SPRING_DATASOURCE_USERNAME: shopflow_admin
+  SPRING_DATASOURCE_PASSWORD: shopflow_pass
+  DB_HOST: shopflow-postgres
+  DB_PORT: "5432"
+
+x-jwt-env: &jwt-env
+  # Issuer must match what Keycloak puts in tokens (browser-facing URL).
+  # JWK set uses the internal Docker hostname so containers can fetch keys.
+  JWT_ISSUER_URI: http://localhost:8080/realms/shopflow-realm
+  JWT_JWK_SET_URI: http://shopflow-keycloak:8080/realms/shopflow-realm/protocol/openid-connect/certs
+
+x-kafka-env: &kafka-env
+  KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+x-jaeger-env: &jaeger-env
+  JAEGER_HOST: shopflow-jaeger
+
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  shopflow-postgres:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres
+    restart: always
+    networks: [shopflow-net]
+    environment:
+      POSTGRES_USER: shopflow_admin
+      POSTGRES_PASSWORD: shopflow_pass
+      POSTGRES_DB: shopflow_root
+    volumes:
+      - shopflow_db_data:/var/lib/postgresql/data
+      - ./docker/init-dbs.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopflow_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  shopflow-redis:
+    image: redis:7-alpine
+    container_name: shopflow-redis
+    restart: always
+    networks: [shopflow-net]
+    volumes:
+      - shopflow_redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: shopflow-kafka
+    restart: always
+    networks: [shopflow-net]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+      CLUSTER_ID: '4L62Cns2TMCm5Rsx1elKKA'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    volumes:
+      - shopflow_kafka_data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: shopflow-opensearch
+    restart: always
+    networks: [shopflow-net]
+    environment:
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - shopflow_opensearch_data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+
+  shopflow-keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    container_name: shopflow-keycloak
+    restart: always
+    networks: [shopflow-net]
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://shopflow-postgres:5432/shopflow_root
+      KC_DB_USERNAME: shopflow_admin
+      KC_DB_PASSWORD: shopflow_pass
+      KC_FEATURES: token-exchange
+    volumes:
+      - ./keycloak-init:/opt/keycloak/data/import
+    ports:
+      - "8080:8080"
+    depends_on:
+      shopflow-postgres:
+        condition: service_healthy
+
+  shopflow-jaeger:
+    image: jaegertracing/all-in-one:1.55
+    container_name: shopflow-jaeger
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+
+  # ── Microservices ───────────────────────────────────────────────────────────
+
+  user-service:
+    image: shopflow/user-service:latest
+    build: ./user-service
+    container_name: shopflow-user-service
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      <<: [*db-env, *jwt-env, *jaeger-env]
+      DB_NAME: userservice_db
+    ports:
+      - "8081:8081"
+    depends_on:
+      shopflow-postgres:
+        condition: service_healthy
+
+  catalog-service:
+    image: shopflow/catalog-service:latest
+    build: ./catalog-service
+    container_name: shopflow-catalog-service
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      <<: [*db-env, *jwt-env, *jaeger-env]
+      DB_NAME: catalogservice_db
+      OPENSEARCH_HOST: opensearch
+      OPENSEARCH_PORT: "9200"
+    ports:
+      - "8082:8082"
+    depends_on:
+      shopflow-postgres:
+        condition: service_healthy
+
+  cart-service:
+    image: shopflow/cart-service:latest
+    build: ./cart-service
+    container_name: shopflow-cart-service
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      <<: [*jwt-env, *jaeger-env]
+      REDIS_HOST: shopflow-redis
+      REDIS_PORT: "6379"
+    ports:
+      - "8083:8083"
+    depends_on:
+      shopflow-redis:
+        condition: service_healthy
+
+  payment-service:
+    image: shopflow/payment-service:latest
+    build: ./payment-service
+    container_name: shopflow-payment-service
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      <<: [*db-env, *jwt-env, *jaeger-env]
+      DB_NAME: paymentservice_db
+      PAYMENT_MOCK: "true"
+    ports:
+      - "8084:8084"
+    depends_on:
+      shopflow-postgres:
+        condition: service_healthy
+
+  order-service:
+    image: shopflow/order-service:latest
+    build: ./order-service
+    container_name: shopflow-order-service
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      <<: [*db-env, *jwt-env, *kafka-env, *jaeger-env]
+      DB_NAME: orderservice_db
+    ports:
+      - "8085:8085"
+    depends_on:
+      shopflow-postgres:
+        condition: service_healthy
+
+  notification-service:
+    image: shopflow/notification-service:latest
+    build: ./notification-service
+    container_name: shopflow-notification-service
+    restart: unless-stopped
+    networks: [shopflow-net]
+    environment:
+      <<: [*kafka-env, *jaeger-env]
+      NOTIFICATION_MOCK: "true"
+    ports:
+      - "8086:8086"
+
+  frontend:
+    image: shopflow/frontend:latest
+    build: ./shopflow-frontend
+    container_name: shopflow-frontend
+    restart: unless-stopped
+    networks: [shopflow-net]
+    ports:
+      - "3000:80"

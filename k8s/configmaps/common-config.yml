@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopflow-config
+  namespace: shopflow
+data:
+  DB_HOST:                  "postgres"
+  DB_PORT:                  "5432"
+  REDIS_HOST:               "redis"
+  REDIS_PORT:               "6379"
+  KAFKA_BOOTSTRAP_SERVERS:  "kafka:9092"
+  OPENSEARCH_HOST:          "opensearch"
+  OPENSEARCH_PORT:          "9200"
+  JAEGER_HOST:              "jaeger"
+  JWT_ISSUER_URI:           "http://keycloak:8080/realms/shopflow-realm"
+  JWT_JWK_SET_URI:          "http://keycloak:8080/realms/shopflow-realm/protocol/openid-connect/certs"
+  PAYMENT_MOCK:             "true"
+  NOTIFICATION_MOCK:        "true"
