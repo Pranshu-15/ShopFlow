@@ -2,14 +2,20 @@
 
 > A production-grade distributed e-commerce platform built on microservices architecture — demonstrating end-to-end mastery of backend engineering, distributed systems patterns, full-stack development, and cloud-native deployment.
 
+<div align="center">
+
+![Home Page](docs/screenshots/01-home-light.png)
+
+</div>
+
 ---
 
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
+- [Screenshots](#-screenshots)
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
-- [Features](#-features)
 - [Animations (GSAP)](#-animations-gsap)
 - [Microservices](#-microservices)
 - [Quickstart](#-quickstart)
@@ -31,6 +37,121 @@ ShopFlow is a full-featured e-commerce platform that mirrors the architectural p
 - 📨 Event-driven architecture with Apache Kafka
 - 📊 Full observability: metrics, distributed tracing, and logs
 - 🐳 Container-first deployment with Docker Compose and Kubernetes manifests
+
+---
+
+## 📸 Screenshots
+
+### 🏠 Landing Page
+
+The hero section greets visitors with animated stats, a gradient headline, and a clear call-to-action. ShopFlow supports both **light** and **dark** themes — toggled from the navbar and persisted to `localStorage`.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/01-home-light.png" alt="Home — Light Mode" /></td>
+    <td><img src="docs/screenshots/02-home-dark.png" alt="Home — Dark Mode" /></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Light Mode</em></td>
+    <td align="center"><em>Dark Mode</em></td>
+  </tr>
+</table>
+
+---
+
+### 🛒 Shop — Product Catalog
+
+Browse the full product catalog with **category filtering**, **live search**, and stock indicators. Products animate in with a staggered GSAP effect on load.
+
+![Shop Page](docs/screenshots/03-shop.png)
+
+**Smart Search** — powered by OpenSearch with full-text support and typo tolerance:
+
+![Shop Search](docs/screenshots/04-shop-search.png)
+
+---
+
+### 🔐 Authentication — Keycloak SSO
+
+Sign-in and registration are handled entirely by **Keycloak** — a production-grade identity provider. Users are redirected to the Keycloak realm, then returned to the app with a signed JWT. New registrations are automatically assigned the `CUSTOMER` role.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/06-keycloak-login.png" alt="Keycloak Login" /></td>
+    <td><img src="docs/screenshots/07-keycloak-register.png" alt="Keycloak Register" /></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Sign In</em></td>
+    <td align="center"><em>Create Account</em></td>
+  </tr>
+</table>
+
+After signing in, the navbar updates instantly — **Sign Up / Sign In** buttons are replaced by the account icon, admin dashboard link (if admin), and **Sign Out**:
+
+![Home Authenticated](docs/screenshots/08-home-authenticated.png)
+
+---
+
+### 🧺 Cart
+
+Adding products updates the cart badge in real time. The cart page shows product thumbnails, a live `− N +` quantity stepper, per-item pricing, and a running total. The **Clear Cart** button wipes everything; dropping quantity to zero automatically removes the item.
+
+![Cart with Items](docs/screenshots/11-cart-with-items.png)
+
+---
+
+### 💳 Checkout
+
+Two-step checkout: review the order summary, then choose a payment method. **Cash on Delivery** confirms immediately. **Pay Online** reveals a card entry form with auto-formatting for card number, expiry, and CVV.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/12-checkout.png" alt="Checkout — COD" /></td>
+    <td><img src="docs/screenshots/13-checkout-pay-online.png" alt="Checkout — Pay Online" /></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Cash on Delivery</em></td>
+    <td align="center"><em>Pay Online (Card / UPI)</em></td>
+  </tr>
+</table>
+
+---
+
+### ✅ Order Confirmation
+
+After placing an order the saga orchestrator kicks off asynchronously — inventory is reserved, payment is processed, and Kafka events notify downstream services. The customer sees a confirmation screen with their unique order ID.
+
+![Order Placed](docs/screenshots/14-order-success.png)
+
+---
+
+### 📦 Order History
+
+All past and current orders are listed chronologically with order IDs, item breakdowns, totals, and real-time status badges (Pending / Confirmed / Shipped / Cancelled).
+
+![Order History](docs/screenshots/15-order-history.png)
+
+---
+
+### 👤 Account
+
+The account page displays the user's profile with a gradient avatar, verified badge, email, and full name pulled from the Keycloak JWT. One-click sign out is available both here and in the navbar.
+
+![Account Page](docs/screenshots/16-account.png)
+
+---
+
+### 🔧 Admin Panel
+
+Admin users get an exclusive `/admin` route — accessible via the dashboard icon in the navbar. The entire panel is protected at both the frontend (route guard) and backend (`@PreAuthorize("hasRole('ADMIN')")`) levels.
+
+**Products Tab** — full CRUD: add new products, edit details, upload images (from device or URL), toggle active/inactive status:
+
+![Admin Products](docs/screenshots/17-admin-products.png)
+
+**Orders Tab** — view all orders across all customers and update their status via a dropdown. Only valid state transitions are shown (e.g. a shipped order cannot go back to pending):
+
+![Admin Orders](docs/screenshots/18-admin-orders.png)
 
 ---
 
@@ -124,37 +245,6 @@ ShopFlow is a full-featured e-commerce platform that mirrors the architectural p
 
 ---
 
-## ✨ Features
-
-### 🛒 Customer Experience
-- 🖼️ **Product Browsing** — paginated product grid with images, pricing in ₹ INR, category filtering
-- 🔍 **Smart Search** — full-text search powered by OpenSearch with typo tolerance
-- 🧺 **Cart** — persistent Redis-backed cart with live `− N +` quantity stepper; reaching zero reverts to "Add to Cart"
-- 💳 **Checkout** — two-step flow: order summary → payment method selection
-- 💰 **Payment Options** — Cash on Delivery (instant confirm) or Pay Online (simulated card gateway with auto-formatted card number, expiry, CVV)
-- 📦 **Order History** — complete order timeline with status tracking (PENDING → CONFIRMED → SHIPPED)
-- 👤 **Account Page** — profile info, verified badge, one-click sign out
-- 🌙 **Dark / Light Theme** — toggle persisted to localStorage with system preference detection
-- 📝 **Registration** — new users sign up via Keycloak's built-in form and are auto-assigned the CUSTOMER role
-
-### 🔧 Admin Panel (`/admin` — ADMIN role required)
-- 📋 **Product Management** — full CRUD table: add, edit, delete products
-- 🖼️ **Image Upload** — upload from device (canvas-resized to max 800px, JPEG 0.78 quality) OR paste an image URL
-- 📊 **Order Management** — view all orders across all customers; update status via dropdown (only valid transitions shown)
-- 🛡️ **RBAC Enforced** — both frontend route guard and backend `@PreAuthorize("hasRole('ADMIN')")` on every admin endpoint
-- 🔀 **Status State Machine** — PENDING → CONFIRMED / CANCELLED / FAILED; CONFIRMED → SHIPPED / CANCELLED / FAILED; terminal states locked
-
-### ⚙️ System / Engineering
-- 🔄 **Saga Orchestration** — order creation runs reserve → pay → confirm with full compensation rollback on failure
-- 🔐 **JWT RBAC** — Keycloak realm roles mapped to Spring Security authorities via `realm_access.roles`
-- 🔁 **Idempotency** — payment service enforces UUID-based idempotency keys
-- 🔭 **Distributed Tracing** — 100% of requests traced via OpenTelemetry → Jaeger
-- 💚 **Health Endpoints** — Spring Actuator `/actuator/health` with detailed DB/Redis status on every service
-- 📝 **Structured Logging** — trace IDs and span IDs embedded in every log line
-- 🚦 **Rate Limiting** — API Gateway enforces per-IP limits via Redis
-
----
-
 ## 🎬 Animations (GSAP)
 
 The frontend uses **GSAP 3.15** for smooth, choreographed animations across every page. All animations follow the React-safe `gsap.context()` pattern with automatic cleanup via `ctx.revert()` on unmount — no memory leaks.
@@ -179,7 +269,6 @@ useEffect(() => {
     tl.fromTo('.hero-badge',  { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.5 })
       .fromTo('.hero-title',  { opacity: 0, y: 56  }, { opacity: 1, y: 0, duration: 0.75 }, '-=0.2')
       .fromTo('.hero-sub',    { opacity: 0, y: 32  }, { opacity: 1, y: 0, duration: 0.6  }, '-=0.4')
-      .fromTo('.hero-cta',    { opacity: 0, y: 24  }, { opacity: 1, y: 0, duration: 0.5  }, '-=0.35')
       .fromTo('.feat-card',   { opacity: 0, y: 50, scale: 0.95 },
               { opacity: 1, y: 0, scale: 1, stagger: 0.14 }, '-=0.15')
   }, heroRef)
@@ -188,7 +277,7 @@ useEffect(() => {
 }, [])
 ```
 
-> **Rule:** Never set `style={{ opacity: 0 }}` inline on elements. For data-driven lists (products, orders, cart items), use `gsap.set(elements, { opacity: 0 })` inside the `useEffect` right before `gsap.to()` — this way elements stay visible if JavaScript hasn't run yet.
+> **Rule:** Never set `style={{ opacity: 0 }}` inline on elements. For data-driven lists (products, orders, cart items), use `gsap.set(elements, { opacity: 0 })` inside the `useEffect` right before `gsap.to()`.
 
 ---
 
@@ -245,7 +334,7 @@ docker compose logs -f     # watch startup logs
 | Service | URL |
 |---|---|
 | 🛍️ Storefront | http://localhost:3000 |
-| 🔐 Keycloak Admin | http://localhost:8080/admin (admin / admin) |
+| 🔐 Keycloak Admin | http://localhost:8080/admin |
 | 🔭 Jaeger Tracing | http://localhost:16686 |
 | 📨 Kafka | localhost:9092 |
 | 🐘 PostgreSQL | localhost:5432 |
@@ -361,7 +450,7 @@ shopflow/
 ├── docker/                   # 🐳 DB init SQL, shared Docker resources
 ├── k8s/                      # ☸️  Kubernetes manifests
 ├── observability/            # 📊 Prometheus + Grafana + Loki compose
-├── scripts/                  # 🔧 Dev utility scripts
+├── docs/screenshots/         # 📸 Auto-generated UI screenshots
 └── docker-compose.yml        # 🚀 Full local stack
 ```
 
